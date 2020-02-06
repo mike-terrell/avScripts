@@ -13,21 +13,47 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
-#
-# List last SQL
-#
+
+
 usage()
 {
-       	echo "Usage: ${0}  [-h]"
+       	echo "Usage: ${0} -d database [-h]"
 		cat <<-EOF
+                        -d: database        - Database name.
                         -h: Help            - Help
 		EOF
-                exit -1
+        exit 1
 }
 
 #
 # Global ENV Variables
 #
+# Args
+#
+export AV_DATABASE=""
+    while getopts "d:h" i
+    do
+     case "$i" in
+             d)
+                     export AV_DATABASE=${OPTARG}
+                     ;;
+
+             *) 
+                     usage
+                     exit -1
+                     ;;
+     esac
+    done
+
+#
+# Check args
+#
+if [ "${AV_DATABASE}" == "" ]
+    then
+        echo "${0}: Error, you need to speciify a database."
+        usage
+        exit -1
+fi
 if [ -f ./avENV.sh ]
 then
         . ./avENV.sh
@@ -36,16 +62,6 @@ else
         exit -1
 fi
 
-#
-# Args
-#
-
-ingstart >/dev/null 2>&1
-
-if [ $? -eq 1 ]
-then
-    echo "Avalanche is curently up."
-    exit 1
-else
-echo "Avalanche is up."
-fi
+echo "Database Size(MB)"
+echo "-----------------"
+echo "`vwinfo $AV_DATABASE | grep columnspace | awk '{print substr($2,2); }'` * `vwinfo $AV_DATABASE | grep block_size | awk '{print substr($2,2); }'` /1024/1024" | bc

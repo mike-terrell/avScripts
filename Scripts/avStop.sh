@@ -13,13 +13,11 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
-#
-# List last SQL
-#
 usage()
 {
-       	echo "Usage: ${0}  [-h]"
+       	echo "Usage: ${0}  [-f] [-h]"
 		cat <<-EOF
+                        -f: Force shutdown.
                         -h: Help            - Help
 		EOF
                 exit -1
@@ -33,6 +31,7 @@ then
         . ./avENV.sh
 else
         echo "Missing the 'avENV.sh' program."
+        echo "Please run ./avSetup.sh script to setup environment."
         exit -1
 fi
 
@@ -40,12 +39,25 @@ fi
 # Args
 #
 
-ingstart >/dev/null 2>&1
+    export CMD="ingstop"
+    while getopts "f h" i
+    do
+     case "$i" in
+             f) 
+                     export CMD="ingstop -force"
+                     ;;
+             *) 
+                     usage
+                     exit -1
+                     ;;
+     esac
+    done
+$CMD 
 
 if [ $? -eq 1 ]
 then
-    echo "Avalanche is curently up."
+    echo "Avalanche is in use. Pleas use -f to force shutdown."
     exit 1
 else
-echo "Avalanche is up."
+echo "Avalanche is stopped."
 fi
